@@ -1,0 +1,56 @@
+--HLRS_FinalProjectInsert
+--Ian Suddreth 8/1/2016
+
+
+GO
+
+INSERT INTO Author(AuthorName, AuthorEmail) VALUES('Ian Suddreth', 'iansuddreth@mail.weber.edu')
+
+INSERT INTO Author(AuthorName) VALUES('George R.R. Martin'),('Wilson Rawls'),('Steven Brust')
+									,('Patrik Rothfuss'),('Andrzej Sapkowski'),('Scott Lynch'),('C.J. Cherryh'),('Jack London')
+									,('Naomi Novik'),('Robin Hobb'),('J.K. Rowling'),('John Tiffany'),('Jack Thorne ');
+
+INSERT INTO Publisher(PublisherName) VALUES ('Bantam'), ('Ace'), ('DAW'), ('Bantam Spectra')
+						,('Del Rey'), ('Scholastic Paperbacks'), ('Gollancz'), ('Yearling'), ('Little Brown UK');
+
+INSERT INTO Shelf(HotelID, ShelfName, ShelfLocation) VALUES (2100,'Main','Front Desk')
+INSERT INTO Shelf(HotelID, ShelfName, ShelfLocation) VALUES (2200,'Main','Front Desk')
+INSERT INTO Shelf(HotelID, ShelfName, ShelfLocation) VALUES (2300,'Main','Front Desk')
+INSERT INTO Shelf(HotelID, ShelfName, ShelfLocation) VALUES (2400,'Main','Front Desk')
+
+-- Inserting Books requires sp_InsertBook to be loaded
+GO
+--Shelf 1 Books
+EXEC sp_InsertBook @PublisherID = 1, @ShelfID = 1, @BookName = 'A Game of Thrones', @AuthorName = 'George R.R. Martin', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 1, @ShelfID = 1, @BookName = 'A Clash of Kings', @AuthorName = 'George R.R. Martin', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 1, @ShelfID = 1, @BookName = 'A Storm of Swords', @AuthorName = 'George R.R. Martin', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 1, @ShelfID = 1, @BookName = 'A Feast for Crows', @AuthorName = 'George R.R. Martin', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 1, @ShelfID = 1, @BookName = 'A Dance with Dragons', @AuthorName = 'George R.R. Martin', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 1, @ShelfID = 1, @BookName = 'The Winds of Winter', @AuthorName = 'George R.R. Martin', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 8, @ShelfID = 1, @BookName = 'Where the Red Fern Grows', @AuthorName = 'Wilson Rawls', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 2, @ShelfID = 1, @BookName = 'The Book of Jhereg', @AuthorName = 'Steven Brust', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 3, @ShelfID = 1, @BookName = 'The Name of the Wind', @AuthorName = 'Patrik Rothfuss', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+EXEC sp_InsertBook @PublisherID = 3, @ShelfID = 1, @BookName = 'The Wise Man''s Fear', @AuthorName = 'Patrik Rothfuss', @SecondAuthorName = NULL, @ThirdAuthorName = NULL
+
+EXEC sp_InsertBook @PublisherID = 9, @ShelfID = 1, @BookName = 'Harry Potter and the Cursed Child', @AuthorName = 'J.K. Rowling', @SecondAuthorName = 'John Tiffany', @ThirdAuthorName = 'Jack Throne'
+------
+
+
+
+--Rental
+
+INSERT INTO Rental(BookID,FolioID,RentalCheckOut,RentalNights,RentalStatus) VALUES (1,1,'8/1/2016',5,'A')
+
+
+
+
+
+--Quotes
+INSERT INTO Quote(BookID, QuoteDescription) VALUES (1,'... a mind needs books as a sword needs a whetstone, if it is to keep its edge.')
+INSERT INTO Quote(BookID, QuoteDescription) VALUES (1,'Never forget what you are, for surely the world will not. Make it your strength. Then it can never be your weakness. Armour yourself in it, and it will never be used to hurt you.')
+INSERT INTO Quote(BookID, QuoteDescription) VALUES (1,'Bran thought about it. ''Can a man still be brave if he''s afraid?''That is the only time a man can be brave,'' his father told him.')
+INSERT INTO Quote(BookID, QuoteDescription) VALUES (1,'Fear cuts deeper than swords.')
+INSERT INTO Quote(BookID, QuoteDescription) VALUES (1,'Some old wounds never truly heal, and bleed again at the slightest word.')
+
+
+--

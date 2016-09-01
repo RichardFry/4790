@@ -1,0 +1,48 @@
+--dbo.showCheckedOut
+--Ian Suddreth 8/1/2016
+
+IF OBJECT_ID (N'dbo.showCheckedOut', N'FN') IS NOT NULL
+DROP FUNCTION dbo.showCheckedOut;
+
+GO
+
+CREATE FUNCTION dbo.showCheckedOut
+       (
+       @HotelID smallint 
+       )
+RETURNS @CheckedOut TABLE
+(
+	Due varchar(200) NOT NULL 
+)
+AS
+BEGIN
+	DECLARE @BookName	nvarchar(50)
+	DECLARE @Date		smalldatetime
+
+	DECLARE CheckOutCursor CURSOR FOR
+	SELECT b.BookName, DATEADD(day, r.RentalNights, r.RentalCheckOut) 
+	FROM Book b
+	JOIN Shelf s ON s.ShelfID = b.ShelfID
+	JOIN OPENQUERY (TITAN_SUDDRETH, 'SELECT * FROM Hotel') t ON t.HotelID = s.HotelID
+	JOIN Rental r ON r.BookID = b.BookID
+	WHERE s.HotelID = @HotelID
+
+	OPEN CheckOutCursor
+
+	-- Fetch First Time 
+	FETCH NEXT FROM CheckOutCursor 
+	INTO @BookName, @Date
+	WHILE @@FETCH_STATUS = 0 
+				BEGIN 
+
+					INSERT INTO @CheckedOut SELECT ( @BookName + ' DUE: ' + CONVERT(varchar(10),@Date) ) 
+					 
+					-- Inner Fetch 
+					FETCH NEXT FROM CheckOutCursor 
+					INTO @BookName, @Date
+				END
+			
+	CLOSE CheckOutCursor DEALLOCATE CheckOutCursor
+
+	RETURN 
+END

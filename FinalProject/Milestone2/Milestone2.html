@@ -1,0 +1,150 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <title>HLRS</title>
+	<!-- External Style Sheet -->
+	<link rel="stylesheet" type="text/ss" href="stylesheets/assign.css" />
+	<!-- Internal Style Sheet -->
+	<style>
+		body{
+			padding: 50px;
+		}
+	
+		h1{
+			color:green;
+		}
+		
+		ol{
+			color:black;
+			list-style: none;
+		}
+	
+		
+	</style>
+  </head>
+  
+  <body>
+	
+    <h1>HLRS System</h1>
+	
+	<h2>Project Overview</h2>
+	
+	<p>The HLRS will provide a service by which the Guests can check out books for the duration of their stay. 
+	This will ensure that the Guests will have a more pleasurable experience at the hotel and may return in the future. 
+	A guest may choose a book from one of the Hotel’s Library shelves which they may check out for the duration or their stay. </p>
+	
+	<p>In addition to this service, the system will also have the functionality to store information of the author, 
+	release, and publisher of the book. Additionally, noteworthy quotes can be stored to be easily accessed in the future.</p>
+	
+	<p>The system will allow for easy modification in the future to add other rental options for the guest.</p>
+	
+	
+	<h2>Data Specifications Overview</h2>
+	
+    <h3>Part A</h3>
+	
+	<b>Updates:</b>
+	<ol>
+		<li>8/1/2016: Added RentalTotal to Rental</li>
+		<li></li>
+	</ol>
+	
+    <a href="images/HLRS_ERDiagram.jpg" target="_self"><img src="images/HLRS_ERDiagram.jpg" alt="ERDiagram" style=""></a>
+    
+	
+    <h3>Part B: TRIGGERS</h3>
+	  
+    <ol>
+      <li><a href="triggers/tr_UpdateShelfDescription.txt" target="_self">tr_UpdateShelfDescription</a></li>
+      <li>Type: On Shelf AFTER Insert</li>
+      <li>After a Shelf is inserted, this trigger puts the hotel name, from a linked server, and the shelf location in the description.</li>
+    </ol>  
+    <ol>
+      <li><a href="triggers/tr_UpdateStatus.txt" target="_self">tr_UpdateStatus</a></li>
+      <li>Type: On Rental AFTER Update</li>
+      <li>Once the RentalCheckIn date is entered, Rental Status changes to complete and this trigger updates the book status to available.</li>
+    </ol>  
+    <ol>
+      <li><a href="triggers/tr_GenerateAuthors.txt" target="_self">tr_GenerateAuthors</a></li>
+      <li>Type: On BookAuthor AFTER Insert/Update</li>
+      <li>When BookAuthor is updated, or inserted, call dbo.printAuthors on that BookID.</li>
+    </ol>  
+    <ol>
+      <li><a href="triggers/tr_UpdateRental.txt" target="_self">tr_UpdateRental</a></li>
+      <li>Type: On Rental AFTER Update</li>
+      <li>When RentalCheckIn is updated, this trigger will calculate the cost, by calling dbo.calculateCost and apply sales tax from TaxLocation, from a linked server, and store it in RentalTotal. It will also change Book and Rental Status.</li>
+    </ol>  
+    <ol>
+      <li><a href="triggers/tr_DefaultBook.txt" target="_self">tr_DefaultBook</a></li>
+      <li>Type: On Book INSTEAD OF Insert</li>
+      <li>When a Book is inserted, a default Publisher and Status value is assigned to it.</li>
+    </ol>  
+    <ol>
+      <li><a href="triggers/tr_AuthorMustExists.txt" target="_self">tr_AuthorMustExists</a></li>
+      <li>Type: On BookAuthor AFTER Insert/Update</li>
+      <li>If an improper AuthorID or BookID is inserted/updated, then raise an error message.</li>
+    </ol>
+	
+	
+    <h3>Part C: STORED PROCEDURES</h3>
+    
+    <ol>
+      <li><a href="storedProcedures/sp_UpdateRental.txt" target="_self">sp_UpdateRental</a></li>
+      <li>Allows the user to update thier Rental Check In time.</li>
+      <li>Input Parameter(s) : smallint(RentalID), smalldatetime(RentalCheckIn)</li>
+      <li>Output Parameter(s) : RentalID</li>
+    </ol>
+    <ol>
+      <li><a href="storedProcedures/sp_InsertBook.txt" target="_self">sp_InsertBook</a></li>
+      <li>Allows the user to input a book name and author. The database will insert the book and the author if they do not exist. Then it will create a BookAuthor entity for the book.</li>
+      <li>Input Parameter(s) : varchar(50)(BookName),smallmoney(BookCost), varchar(20)(AuthorFirst), varchar(20)(AuthorLast) </li>
+      <li>Output Parameter(s) : BookID</li>
+    </ol>
+	
+    <h3>Part D: USER DEFINED FUNCTIONS</h3>
+    
+    <ol>
+      <li><a href="userDefinedFunctions/showCheckedOut.txt" target="_self">dbo.showCheckedOut</a></li>
+      <li>This will utilize a cursor or dbo.getBooks and show all the checked out books in a hotel with the due dates.</li>
+      <li>Input Parameter(s): smallint(HotelID)</li>
+      <li>Returns__ Table with BookName/RentalCheckIn+RentalNights</li>
+    </ol>
+	<ol>
+      <li><a href="userDefinedFunctions/printAuthors.txt" target="_self">dbo.printAuthors</a></li>
+      <li>This will utilize a cursor to print all the Authors for a book in order.</li>
+      <li>Input Parameter(s): smallint(BookID)</li>
+      <li>Returns__ Table with BookName/List of AuthorFirst,AuthorLast</li>
+    </ol>
+    <ol>
+      <li><a href="userDefinedFunctions/getQuote.txt" target="_self">dbo.getQuote</a></li>
+      <li>This function will output all the quotes from an AuthorID input.</li>
+      <li>Input Parameter(s): smallint(AuthorID)</li>
+      <li>Returns__ Table with Quotes</li>
+    </ol>
+    <ol>
+      <li><a href="userDefinedFunctions/getBooks.txt" target="_self">dbo.getBooks</a></li>
+      <li>This function will show all books on a shelf with quotes attributed to them.</li>
+      <li>Input Parameter(s): smallint(ShelfID)</li>
+      <li>Returns__ Table with BookName/Quotes</li>
+    </ol>
+    <ol>
+      <li><a href="userDefinedFunctions/calculateCost.txt" target="_self">dbo.calculateCost</a></li>
+      <li>This function will calculate base cost of Rental by determining if it is late.</li>
+      <li>Input Parameter(s): smallint(RentalID)</li>
+      <li>Returns__ smallmoney</li>
+    </ol>
+	
+	<h3>Other:</h3>
+    
+    <ol>
+      <li><a href="other/HLRS_FinalProjectCreate.txt" target="_self">DB and Table Creation Script</a></li><br /> 
+      <li><a href="other/HLRS_FinalProjectInsert.txt" target="_self">INSERT INTO Statements Sample Data</a></li><br /> 
+      <li><a href="" target="_self">Stored Procedures, User Defined Functions), and Triggers of the database</a></li><br /> 
+      <li><a href="" target="_self">Demo Script</a></li><br /> 
+    </ol>
+    
+  </body>
+</html>

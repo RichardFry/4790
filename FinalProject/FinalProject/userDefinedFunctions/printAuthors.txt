@@ -1,0 +1,52 @@
+--dbo.printAuthors
+--Ian Suddreth 8/1/2016
+
+IF OBJECT_ID (N'dbo.printAuthors', N'FN') IS NOT NULL
+DROP FUNCTION dbo.printAuthors;
+
+GO
+
+CREATE FUNCTION dbo.printAuthors
+       (
+       @BookID smallint 
+       )
+RETURNS @AuthorsOfBook TABLE
+(
+	AuthorsOfBook varchar(200) NOT NULL 
+)
+AS
+BEGIN
+	DECLARE @AuthorName	nvarchar(50)
+
+	INSERT INTO @AuthorsOfBook SELECT BookName FROM Book WHERE BookID = @BookID
+	INSERT INTO @AuthorsOfBook SELECT '******************************'
+
+	DECLARE AuthorCursor CURSOR FOR
+	SELECT a.AuthorName
+	FROM Author a
+	JOIN BookAuthor ba ON ba.AuthorID = a.AuthorID
+	JOIN Book b ON b.BookID = ba.BookID
+	WHERE b.BookID = @BookID
+	ORDER BY ba.BookAuthorOrdinal
+
+
+	OPEN AuthorCursor
+
+	-- Fetch First Time 
+	FETCH NEXT FROM AuthorCursor 
+	INTO @AuthorName
+	WHILE @@FETCH_STATUS = 0 
+				BEGIN 
+
+					INSERT INTO @AuthorsOfBook SELECT ( @AuthorName ) 
+					 
+					-- Inner Fetch 
+					FETCH NEXT FROM AuthorCursor 
+					INTO @AuthorName
+				END
+			
+	CLOSE AuthorCursor DEALLOCATE AuthorCursor
+
+	RETURN 
+
+END

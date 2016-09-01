@@ -1,0 +1,39 @@
+--tr_UpdateStatus
+--Ian Suddreth 8/1/2016
+
+IF OBJECT_ID ('tr_UpdateStatus', 'TR') IS NOT NULL  
+   DROP TRIGGER tr_UpdateStatus;
+    
+GO 
+
+Create Trigger tr_UpdateStatus ON Rental
+AFTER UPDATE, INSERT 
+AS 
+
+BEGIN
+
+	IF(SELECT RentalStatus FROM inserted) = 'A'
+		BEGIN
+		UPDATE Book SET BookStatus = 'O'
+		WHERE BookID =
+		(
+		SELECT r.BookID
+		FROM Rental r
+		JOIN inserted i
+		ON i.RentalID = r.RentalID
+		)
+	END
+
+	IF(SELECT RentalStatus FROM inserted) = 'C'
+		BEGIN
+		UPDATE Book SET BookStatus = 'A'
+		WHERE BookID =
+		(
+		SELECT r.BookID
+		FROM Rental r
+		JOIN inserted i
+		ON i.RentalID = r.RentalID
+		)
+	END
+
+END

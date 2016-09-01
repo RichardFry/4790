@@ -1,0 +1,38 @@
+--dbo.calculateCost
+--Ian Suddreth 8/1/2016
+
+IF OBJECT_ID (N'dbo.calculateCost', N'FN') IS NOT NULL
+DROP FUNCTION dbo.calculateCost;
+
+GO
+
+CREATE FUNCTION dbo.calculateCost
+       (
+       @RentalID smallint 
+       )
+RETURNS smallmoney
+AS
+BEGIN
+	DECLARE @Total smallmoney
+	DECLARE @Cost smallmoney
+	DECLARE @BookID smallint
+	DECLARE @Nights tinyint
+	DECLARE @LateFee smallmoney
+	DECLARE @Tax decimal(6,4)
+
+	SET @Tax = (SELECT t.SalesTaxRate FROM OPENQUERY (TITAN_SUDDRETH, 'SELECT tr.SalesTaxRate, h.HotelID FROM TaxRate tr JOIN Hotel h ON h.TaxLocationID = tr.TaxLocationID') t WHERE t.HotelID = 2100)
+
+	SET @BookID = (SELECT BookID FROM Rental WHERE RentalID = @RentalID)
+	SET @Cost = (SELECT BookCost FROM Book WHERE BookID = @BookID)
+	SET @Nights = (SELECT RentalNights FROM Rental WHERE RentalID = @RentalID)
+	SET @LateFee = 0
+	
+	IF DATEDIFF(day,DATEADD(day,5,(SELECT RentalCheckOut FROM Rental WHERE RentalID = @RentalID)) , (SELECT RentalCheckIn FROM Rental WHERE RentalID = @RentalID)) > 0
+		BEGIN
+			SET @LateFee = 5
+		END
+	
+	SET @Total = ROUND(((@Cost*@Nights) + @LateFee) + (((@Cost*@Nights) + @LateFee) * (@Tax/100)),2)
+
+	RETURN @Total
+END

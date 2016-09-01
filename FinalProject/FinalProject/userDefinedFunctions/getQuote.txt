@@ -1,0 +1,23 @@
+--dbo.getQuote
+--Ian Suddreth 8/1/2016
+
+IF OBJECT_ID (N'dbo.getQuote', N'FN') IS NOT NULL
+DROP FUNCTION dbo.getQuote;
+
+GO
+
+CREATE FUNCTION dbo.getQuote
+       (
+       @AuthorID smallint 
+       )
+RETURNS TABLE
+AS
+RETURN
+(
+	SELECT b.BookName, q.QuoteDescription 
+	FROM Quote q
+	JOIN Book b ON b.BookID = q.BookID
+	JOIN BookAuthor ba ON ba.BookID = b.BookID
+	JOIN Author a ON a.AuthorID = ba.AuthorID
+	WHERE a.AuthorID = @AuthorID
+)

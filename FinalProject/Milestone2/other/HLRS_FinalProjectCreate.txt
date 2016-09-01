@@ -1,0 +1,273 @@
+--HLRS_FinalProjectCreate
+--Ian Suddreth 7/27/2016
+
+
+USE Master
+
+IF EXISTS (SELECT * FROM sys.databases WHERE name='SUDDRETH_HLRS')
+DROP DATABASE SUDDRETH_HLRS
+
+GO
+
+CREATE DATABASE SUDDRETH_HLRS
+
+ON PRIMARY
+
+(
+NAME = 'SUDDRETH_HLRS',
+FILENAME = 'C:\Stage\SUDDRETH_HLRS.mdf',
+SIZE = 10MB,
+MAXSIZE = 50MB,
+FILEGROWTH = 10%
+)
+
+LOG ON
+
+(
+NAME = 'SUDDRETH_HLRS_LOG',
+FILENAME = 'C:\Stage\SUDDRETH_HLRS.ldf',
+SIZE = 2500KB, --10% for Read, otherwise 25%
+MAXSIZE = 12500KB, -- 25% of 10MB
+FILEGROWTH = 1250KB -- 25% of 5MB
+)
+
+GO
+
+-- With the database now created, switch to it and begin creating the individual 
+-- tables for the database
+
+USE SUDDRETH_HLRS
+
+
+CREATE TABLE Quote
+(
+QuoteID				smallint		NOT NULL	IDENTITY(1,1),
+BookID				smallint		NOT NULL,
+QuoteDescription	varchar(20)		NOT NULL,
+QuoteComment		varchar(20)		NULL
+)
+
+CREATE TABLE BookAuthor
+(
+BookAuthorID		smallint	NOT NULL	IDENTITY(1,1),
+BookID				smallint	NOT NULL,
+AuthorID			smallint	NOT NULL,
+BookAuthorOrdinal	tinyint		NULL
+)
+
+CREATE TABLE Author
+(
+AuthorID		smallint		NOT NULL		IDENTITY(1,1),
+AuthorFirst		varchar(20)		NOT NULL,
+AuthorLast		varchar(20)		NOT NULL,
+AuthorWebsite	varchar(100)		NULL,
+AuthorEmail		varchar(50)		NULL
+)
+
+CREATE TABLE Rental
+(
+RentalID			smallint		NOT NULL	IDENTITY(1,1),
+BookID				smallint		NULL,
+FolioID				smallint		NOT NULL,
+RentalCheckOut		smalldatetime	NOT NULL,
+RentalCheckIn		smalldatetime	NULL,
+RentalNights		tinyint			NOT NULL,
+RentalStatus		char(1)			NOT NULL,
+RentalTotal		smallmoney		NULL
+)
+
+CREATE TABLE Book
+(
+BookID				smallint		NOT NULL		IDENTITY(1,1),
+PublisherID			smallint		NOT NULL,
+ShelfID				smallint		NULL,
+BookName			varchar(50)		NOT NULL,
+BookDescription		varchar(200)	NULL,
+BookCost			smallmoney		NOT NULL,
+BookStatus			char(1)			NOT NULL,
+)
+
+CREATE TABLE Shelf
+(
+ShelfID				smallint		NOT NULL		IDENTITY(1,1),
+HotelID				smallint		NOT NULL,
+ShelfName			varchar(20)		NOT NULL,
+ShelfLocation		varchar(10)		NOT NULL,
+ShelfDescription	varchar(10)		NULL
+)
+
+CREATE TABLE Publisher
+(
+PublisherID				smallint		NOT NULL		IDENTITY(1,1),
+PublisherName			varchar(50)		NOT NULL,
+PublisherPhone			varchar(20)		NOT NULL,
+)
+
+CREATE TABLE Hotel
+(
+HotelID				smallint		NOT NULL,
+HotelName			varchar(30)		NOT NULL,
+HotelAddress		varchar(30)		NOT NULL,
+HotelCity			varchar(20)		NOT NULL,
+HotelState			char(2)			NULL,
+HotelCountry		varchar(20)		NOT NULL,
+HotelPostalCode		char(10)		NOT NULL,
+HotelStarRating		char(1)			NULL,
+HotelPictureLink	varchar(100)	NULL,
+TaxLocationID		smallint		NOT NULL
+)
+
+CREATE TABLE Folio
+(
+FolioID			smallint		NOT NULL		IDENTITY(1,1),
+ReservationID	smallint		NOT NULL,
+GuestID			smallint		NOT NULL,
+RoomID			smallint		NOT NULL,
+QuotedRate		smallmoney		NOT NULL,
+CheckinDate		smalldatetime	NOT NULL,
+Nights			tinyint			NOT NULL,
+Status			char(1)			NOT NULL,
+Comments		varchar(200)	NULL,
+DiscountID		smallint		NOT NULL
+)
+
+
+
+-- Ensure that the script to create tables has finished
+-- before altering tables and adding in constraints
+
+GO
+
+-- Alter each of the tables to add Primary keys
+
+ALTER TABLE Quote
+	ADD CONSTRAINT PK_QuoteID
+	PRIMARY KEY (QuoteID)
+
+
+ALTER TABLE BookAuthor
+	ADD CONSTRAINT PK_BookAuthorID
+	PRIMARY KEY (BookAuthorID)
+
+
+ALTER TABLE Author
+	ADD CONSTRAINT PK_AuthorID
+	PRIMARY KEY (AuthorID)
+
+
+ALTER TABLE Rental
+	ADD CONSTRAINT PK_RentalID
+	PRIMARY KEY (RentalID)
+
+
+ALTER TABLE Book
+	ADD CONSTRAINT PK_BookID
+	PRIMARY KEY (BookID)
+
+
+ALTER TABLE Shelf
+	ADD CONSTRAINT PK_ShelfID
+	PRIMARY KEY (ShelfID)
+
+
+ALTER TABLE Publisher
+	ADD CONSTRAINT PK_PublisherID
+	PRIMARY KEY (PublisherID)
+
+
+ALTER TABLE Hotel
+	ADD CONSTRAINT PK_HotelID
+	PRIMARY KEY (HotelID)
+
+
+ALTER TABLE Folio
+	ADD CONSTRAINT PK_FolioID
+	PRIMARY KEY (FolioID)
+
+	
+-- Ensure PKs have been created before moving on to FKs
+
+GO
+
+-- Alter tables to set up foreign keys
+
+ALTER TABLE Quote
+	ADD CONSTRAINT FK_QuoteBook
+	FOREIGN KEY (BookID) REFERENCES Book (BookID)
+	ON UPDATE Cascade
+	ON DELETE Cascade
+
+
+ALTER TABLE Shelf
+	ADD CONSTRAINT FK_ShelfHotel
+	FOREIGN KEY (HotelID) REFERENCES Hotel (HotelID)
+	ON UPDATE Cascade
+	ON DELETE Cascade
+
+
+ALTER TABLE Book
+	ADD CONSTRAINT FK_BookPublisher
+	FOREIGN KEY (PublisherID) REFERENCES Publisher (PublisherID)
+	ON UPDATE Cascade
+	ON DELETE Cascade,
+
+	CONSTRAINT FK_BookShelf
+	FOREIGN KEY (ShelfID) REFERENCES Shelf (ShelfID)
+	ON UPDATE Cascade
+	ON DELETE Cascade
+
+
+ALTER TABLE Rental
+	ADD CONSTRAINT FK_RentalBook
+	FOREIGN KEY (BookID) REFERENCES Book (BookID)
+	ON UPDATE Cascade
+	ON DELETE Cascade,
+	
+	
+	CONSTRAINT FK_RentalFolio
+	FOREIGN KEY (FolioID) REFERENCES Folio (FolioID)
+	ON UPDATE Cascade
+	ON DELETE Cascade
+
+
+ALTER TABLE BookAuthor
+	ADD CONSTRAINT FK_BookAuthorBook
+	FOREIGN KEY (BookID) REFERENCES Book (BookID)
+	ON UPDATE Cascade
+	ON DELETE Cascade,
+	
+	CONSTRAINT FK_BookAuthorAuthor
+	FOREIGN KEY (AuthorID) REFERENCES Author (AuthorID)
+	ON UPDATE Cascade
+	ON DELETE Cascade
+
+
+-- Alter tables to set up constraints
+
+ALTER TABLE Rental
+	ADD CONSTRAINT CK_RentalStatus
+	CHECK (RentalStatus IN ('R','A','C','X'))
+
+
+ALTER TABLE Book
+	ADD CONSTRAINT CK_BookStatus
+	CHECK (BookStatus IN ('R','A','O'))
+
+	
+-- defaults
+
+
+
+
+-- Inserts
+
+ INSERT INTO Author(AuthorFirst, AuthorLast, AuthorEmail) VALUES('Ian','Suddreth', 'iansuddreth@mail.weber.edu')
+
+
+--
+
+USE SUDDRETH_HLRS
+
+GO
+
+SELECT * FROM Author

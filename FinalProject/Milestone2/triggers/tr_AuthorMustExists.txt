@@ -1,0 +1,2 @@
+--tr_AuthorMustExists
+--Ian Suddreth 8/1/2016

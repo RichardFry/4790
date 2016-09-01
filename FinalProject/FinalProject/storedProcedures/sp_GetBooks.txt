@@ -1,0 +1,26 @@
+--sp_GetBooks
+--Ian Suddreth 8/1/2016
+
+GO
+
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE SPECIFIC_NAME = 'sp_GetBooks')
+	DROP PROCEDURE sp_GetBooks;
+
+GO 
+
+CREATE PROCEDURE sp_GetBooks
+(
+	@ShelfID smallint OUTPUT
+)
+
+AS 
+BEGIN
+
+	SELECT b.BookName, b.BookStatus
+	FROM Book b
+	JOIN Shelf s ON s.ShelfID = b.ShelfID
+	WHERE s.ShelfID = @ShelfID
+	AND b.BookStatus = 'A'
+
+	RETURN
+END
